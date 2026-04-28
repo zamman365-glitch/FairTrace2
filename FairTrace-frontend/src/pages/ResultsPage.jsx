@@ -13,7 +13,7 @@ const ResultsPage = () => {
     console.log("RECON_LOG: Generating PDF Report for Session:", sessionId);
     try {
       // Direct window open for file download
-      window.open(`http://localhost:5000/api/audit/report/pdf/${sessionId}`, '_blank');
+      window.open(`https://fairtrace2-3.onrender.com/audit/report/pdf/${sessionId}`, '_blank');
     } catch (error) {
       console.error("EXPORT_ERROR:", error);
     }
@@ -23,7 +23,7 @@ const ResultsPage = () => {
   const handleRemediate = async () => {
     console.log("RECON_LOG: Initiating Bias Neutralization Protocol...");
     try {
-      const response = await fetch(`http://localhost:5000/api/audit/remediate/${sessionId}`, {
+      const response = await fetch(`https://fairtrace2-3.onrender.com/audit/remediate/${sessionId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -40,7 +40,7 @@ const ResultsPage = () => {
   useEffect(() => {
     const fetchResults = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/audit/results/${sessionId}`);
+        const response = await fetch(`https://fairtrace2-3.onrender.com/audit/results/${sessionId}`);
         if (!response.ok) throw new Error('Server unreachable');
         const jsonData = await response.json();
         setData(jsonData);
