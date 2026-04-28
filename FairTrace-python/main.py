@@ -8,6 +8,7 @@ app = FastAPI()
 origins = [
     "http://localhost:3000",   # React dev server
     "http://127.0.0.1:3000",  # optional fallback
+    "https://fair-trace2-25kq.vercel.app/",
 ]
 
 app.add_middleware(
