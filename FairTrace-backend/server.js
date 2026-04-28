@@ -14,15 +14,36 @@ const progressSocket = require("./sockets/progressSocket");
 const app = express();
 const server = http.createServer(app);
 
+/* ✅ Allowed Origins */
+const allowedOrigins = [
+  "http://localhost:5173", // local frontend (Vite)
+  "https://fair-trace2-25kq.vercel.app" // deployed frontend (no trailing /)
+];
+
+/* ✅ CORS Middleware */
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
+}));
+
+/* ✅ Socket.IO CORS */
 const io = new Server(server, {
-  cors: { origin: "*" }
+  cors: {
+    origin: allowedOrigins,
+    methods: ["GET", "POST"]
+  }
 });
 
 /* DB */
 connectDB();
 
 /* Middlewares */
-app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -53,10 +74,10 @@ app.use((req, res) => {
 
 /* Error Handler */
 app.use((err, req, res, next) => {
-  console.error(err);
+  console.error(err.message || err);
   res.status(500).json({
     success: false,
-    message: "Internal Server Error"
+    message: err.message || "Internal Server Error"
   });
 });
 
