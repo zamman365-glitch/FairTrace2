@@ -1,30 +1,36 @@
-const { spawn } = require("child_process");
+const Redis = require("ioredis");
+const redis = new Redis(); // Connects to your Memurai/Redis
+const runPythonAudit = require("./path_to_the_code_you_just_sent"); 
 
-module.exports = (session) => {
-  return new Promise((resolve, reject) => {
+async function startWorker() {
+    console.log("🚀 FairTrace Worker is active and waiting for jobs...");
 
-    const py = spawn("python3", [
-      "python_engine/main.py",
-      "--session_id", session.sessionId,
-      "--dataset", session.inputs.datasetPath,
-      "--model", session.inputs.modelPath,
-      "--target", session.inputs.targetColumn,
-      "--protected", session.inputs.protectedAttribute
-    ]);
+    while (true) {
+        // 1. Try to "Pop" a job from the Redis list named 'audit_queue'
+        const jobData = await redis.lpop("audit_queue");
 
-    let output = "";
+        if (jobData) {
+            const session = JSON.parse(jobData);
+            console.log(`📦 Found job for Session: ${session.sessionId}. Starting Python...`);
 
-    py.stdout.on("data", data => {
-      output += data.toString();
-    });
+            try {
+                // 2. Call the spawn logic you provided
+                const result = await runPythonAudit(session);
+                
+                // 3. Store the result back in Redis so the Frontend can see it
+                await redis.set(`result:${session.sessionId}`, JSON.stringify(result));
+                console.log(`✅ Audit Complete for ${session.sessionId}`);
+            } catch (err) {
+                console.error("❌ Python Execution Failed:", err);
+            }
+        }
 
-    py.on("close", code => {
-      if (code === 0) {
-        resolve(JSON.parse(output));
-      } else {
-        reject("Python Error");
-      }
-    });
+        // 4. Wait for 2 seconds before checking the queue again (Prevents 'Clean Exit')
+        await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+}
 
-  });
-};
+startWorker().catch(err => {
+    console.error("Worker crashed:", err);
+    process.exit(1);
+});
