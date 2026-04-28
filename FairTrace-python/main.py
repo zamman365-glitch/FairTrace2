@@ -1,9 +1,22 @@
 from fastapi import FastAPI, UploadFile, File, Form
+from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 import numpy as np
 
 app = FastAPI()
 
+origins = [
+    "http://localhost:3000",   # React dev server
+    "http://127.0.0.1:3000",  # optional fallback
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # ---- Metric: Demographic Parity Difference ----
 def demographic_parity_difference(y, sensitive):
