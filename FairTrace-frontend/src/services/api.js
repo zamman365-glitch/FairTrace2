@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'https://fairtrace2-1.onrender.com',
+  baseURL: 'https://fairtrace2-3.onrender.com',
 });
 
 export const uploadFiles = async (formData) => {
